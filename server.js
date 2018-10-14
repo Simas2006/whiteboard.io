@@ -4,7 +4,8 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var PORT = process.argv[2] || 8000;
-var colors = [];
+var colors = ["#ffffff","#000000"];
+var permanentCodemap = [];
 
 var padHex = n => "0".repeat(6 - n.length) + n;
 
@@ -20,7 +21,11 @@ io.on("connection",function(socket) {
     id: uid,
     colors: colors
   }));
+  socket.on("ready",function() {
+    socket.emit("codemap","1," + JSON.stringify(permanentCodemap));
+  });
   socket.on("codemap",function(codemap) {
+    permanentCodemap = permanentCodemap.concat(JSON.parse(codemap));
     socket.broadcast.emit("codemap",uid + "," + codemap);
   });
 });

@@ -80,6 +80,7 @@ socket.on("confirm",function(response) {
   personalID = response.id;
   colors = response.colors;
   lastPositions = response.colors.map(item => {return {x: null,y: null}});
+  socket.emit("ready");
 });
 socket.on("connection",function(data) {
   data = JSON.parse(data);
