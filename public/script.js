@@ -13,15 +13,15 @@ function drawAtMouse(event) {
   if ( ! drawing ) return;
   var rect = canvas.getBoundingClientRect();
   var position = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+    x: (event.clientX - rect.left) / canvas.width,
+    y: (event.clientY - rect.top) / canvas.width
   }
   ctx.strokeStyle = colors[personalID];
   ctx.lineWidth = 2.5;
   if ( ! lastPositions[personalID].x ) lastPositions[personalID] = position;
   ctx.beginPath();
-  ctx.moveTo(lastPositions[personalID].x,lastPositions[personalID].y);
-  ctx.lineTo(position.x,position.y);
+  ctx.moveTo(lastPositions[personalID].x * canvas.width,lastPositions[personalID].y * canvas.width);
+  ctx.lineTo(position.x * canvas.width,position.y * canvas.width);
   ctx.stroke();
   lastPositions[personalID] = position;
   saveData.push(position);
@@ -39,8 +39,8 @@ function produceDrawing(id,codemap) {
     ctx.lineWidth = 2.5;
     if ( ! lastPositions[id].x ) lastPositions[id] = codemap[i];
     ctx.beginPath();
-    ctx.moveTo(lastPositions[id].x,lastPositions[id].y);
-    ctx.lineTo(codemap[i].x,codemap[i].y);
+    ctx.moveTo(lastPositions[id].x * canvas.width,lastPositions[id].y * canvas.width);
+    ctx.lineTo(codemap[i].x * canvas.width,codemap[i].y * canvas.width);
     ctx.stroke();
     lastPositions[id] = codemap[i];
   }
