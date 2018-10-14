@@ -7,6 +7,10 @@ var PORT = process.argv[2] || 8000;
 
 app.use("/public",express.static(__dirname + "/public"));
 
+io.on("connection",function(socket) {
+  socket.on("codemap",arr => console.log(arr.length));
+})
+
 http.listen(PORT,function() {
   console.log("Listening on port " + PORT);
 });

@@ -1,12 +1,14 @@
 var canvas,ctx;
 var lastPositions = [
-  {x: null,y: null},
   {x: null,y: null}
 ];
+var personalID = 0;
 var drawing = false;
 var saveData = [];
+var lastSendTime = 0;
 var socket = io();
-var SEND_PERIOD = 25;
+var POINTS_BEFORE_SEND = 10;
+var TIME_BEFORE_SEND = 125;
 
 function drawAtMouse(event) {
   if ( ! drawing ) return;
@@ -17,12 +19,12 @@ function drawAtMouse(event) {
   }
   ctx.strokeStyle = "black";
   ctx.lineWidth = 2.5;
-  if ( ! lastPositions[0].x ) lastPositions[0] = position;
+  if ( ! lastPositions[personalID].x ) lastPositions[personalID] = position;
   ctx.beginPath();
-  ctx.moveTo(lastPositions[0].x,lastPositions[0].y);
+  ctx.moveTo(lastPositions[personalID].x,lastPositions[personalID].y);
   ctx.lineTo(position.x,position.y);
   ctx.stroke();
-  lastPositions[0] = position;
+  lastPositions[personalID] = position;
   saveData.push(position);
 }
 
@@ -46,7 +48,16 @@ function produceDrawing(id,codemap) {
 }
 
 function sendData() {
-  
+  setInterval(function() {
+    lastSendTime++;
+    if ( saveData.length < POINTS_BEFORE_SEND ) {
+      lastSendTime++;
+      if ( lastSendTime < TIME_BEFORE_SEND || saveData.length <= 0 ) return;
+    }
+    socket.emit("codemap",saveData.map(item => item ? [item.x,item.y] : null));
+    saveData = [];
+    lastSendTime = 0;
+  },1);
 }
 
 window.onmousemove = drawAtMouse;
