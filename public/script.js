@@ -1,14 +1,13 @@
 var canvas,ctx;
-var lastPositions = [
-  {x: null,y: null}
-];
+var lastPositions = [];
+var colors = [];
 var personalID = 0;
 var drawing = false;
 var saveData = [];
 var lastSendTime = 0;
 var socket = io();
-var POINTS_BEFORE_SEND = 10;
-var TIME_BEFORE_SEND = 125;
+var POINTS_BEFORE_SEND = 5;
+var TIME_BEFORE_SEND = 12.5 * POINTS_BEFORE_SEND;
 
 function drawAtMouse(event) {
   if ( ! drawing ) return;
@@ -17,7 +16,7 @@ function drawAtMouse(event) {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top
   }
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = colors[personalID];
   ctx.lineWidth = 2.5;
   if ( ! lastPositions[personalID].x ) lastPositions[personalID] = position;
   ctx.beginPath();
@@ -36,7 +35,7 @@ function produceDrawing(id,codemap) {
       lastPositions[id] = {x: null,y: null}
       continue;
     }
-    ctx.strokeStyle = "green";
+    ctx.strokeStyle = colors[id];
     ctx.lineWidth = 2.5;
     if ( ! lastPositions[id].x ) lastPositions[id] = codemap[i];
     ctx.beginPath();
@@ -54,7 +53,7 @@ function sendData() {
       lastSendTime++;
       if ( lastSendTime < TIME_BEFORE_SEND || saveData.length <= 0 ) return;
     }
-    socket.emit("codemap",saveData.map(item => item ? [item.x,item.y] : null));
+    socket.emit("codemap",JSON.stringify(saveData.map(item => item ? [item.x,item.y] : null)));
     saveData = [];
     lastSendTime = 0;
   },1);
@@ -66,9 +65,27 @@ window.onmousedown = function() {
 }
 window.onmouseup = function() {
   drawing = false;
-  lastPositions[0] = {x: null,y: null}
+  lastPositions[personalID] = {x: null,y: null}
   saveData.push(null);
 }
+
+socket.on("codemap",function(codemap) {
+  codemap = codemap.split(",");
+  var id = parseInt(codemap[0]);
+  codemap = codemap.slice(1).join(",");
+  produceDrawing(id,codemap);
+});
+socket.on("confirm",function(response) {
+  response = JSON.parse(response);
+  personalID = response.id;
+  colors = response.colors;
+  lastPositions = response.colors.map(item => {return {x: null,y: null}});
+});
+socket.on("connection",function(data) {
+  data = JSON.parse(data);
+  lastPositions[data.id] = {x: null,y: null}
+  colors[data.id] = data.color;
+});
 
 window.onload = function() {
   canvas = document.getElementById("canvas");
