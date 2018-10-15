@@ -27,16 +27,22 @@ function drawAtMouse(event) {
   saveData.push(position);
 }
 
-function produceDrawing(id,codemap) {
+function produceDrawing(codemap) {
   codemap = JSON.parse(codemap);
-  codemap = codemap.map(item => item ? {x: item[0],y: item[1]} : null);
+  codemap = codemap.map(item => item && item[0] ? {x: item[0],y: item[1]} : item);
+  ctx.lineWidth = 2.5;
+  var id = 0;
+  console.log(codemap);
   for ( var i = 0; i < codemap.length; i++ ) {
     if ( ! codemap[i] ) {
       lastPositions[id] = {x: null,y: null}
       continue;
     }
+    if ( ! isNaN(codemap[i]) ) {
+      id = codemap[i];
+      continue;
+    }
     ctx.strokeStyle = colors[id];
-    ctx.lineWidth = 2.5;
     if ( ! lastPositions[id].x ) lastPositions[id] = codemap[i];
     ctx.beginPath();
     ctx.moveTo(lastPositions[id].x * canvas.width,lastPositions[id].y * canvas.width);
@@ -53,7 +59,8 @@ function sendData() {
       lastSendTime++;
       if ( lastSendTime < TIME_BEFORE_SEND || saveData.length <= 0 ) return;
     }
-    socket.emit("codemap",JSON.stringify(saveData.map(item => item ? [item.x,item.y] : null)));
+    var translation = JSON.stringify([personalID].concat(saveData).map(item => item && item.x ? [item.x,item.y] : item));
+    socket.emit("codemap",translation);
     saveData = [];
     lastSendTime = 0;
   },1);
@@ -70,10 +77,7 @@ window.onmouseup = function() {
 }
 
 socket.on("codemap",function(codemap) {
-  codemap = codemap.split(",");
-  var id = parseInt(codemap[0]);
-  codemap = codemap.slice(1).join(",");
-  produceDrawing(id,codemap);
+  produceDrawing(codemap);
 });
 socket.on("confirm",function(response) {
   response = JSON.parse(response);
