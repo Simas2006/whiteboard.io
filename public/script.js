@@ -93,8 +93,8 @@ window.onmouseup = function() {
 }
 window.onload = function() {
   canvas = document.getElementById("canvas");
-  canvas.width = Math.min(window.innerWidth,window.innerHeight);
-  canvas.height = Math.min(window.innerWidth,window.innerHeight);
+  canvas.width = Math.min(window.innerWidth,window.innerHeight * 0.9);
+  canvas.height = Math.min(window.innerWidth,window.innerHeight * 0.9);
   ctx = canvas.getContext("2d");
   sendData();
 }

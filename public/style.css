@@ -1,3 +1,13 @@
+body {
+  text-align: center;
+}
+button {
+  width: 8vh;
+  height: 8vh;
+  text-align: center;
+  font-family: "Verdana";
+  font-size: 200%;
+}
 canvas {
   border: 1px solid black;
 }
