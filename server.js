@@ -4,7 +4,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var PORT = process.argv[2] || 8000;
-var colors = ["#ff0000","#000000"];
+var colors = ["#ffffff"];
 var permanentCodemap = [];
 
 var padHex = n => "0".repeat(6 - n.length) + n;

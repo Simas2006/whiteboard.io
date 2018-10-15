@@ -1,7 +1,7 @@
 var canvas,ctx;
 var lastPositions = [];
 var colors = [];
-var personalID = 0;
+var activeID,personalID;
 var drawing = false;
 var saveData = [];
 var lastSendTime = 0;
@@ -16,25 +16,23 @@ function drawAtMouse(event) {
     x: (event.clientX - rect.left) / canvas.width,
     y: (event.clientY - rect.top) / canvas.width
   }
-  ctx.strokeStyle = colors[personalID];
-  ctx.lineWidth = 2.5;
-  if ( ! lastPositions[personalID].x ) lastPositions[personalID] = position;
+  ctx.strokeStyle = colors[activeID];
+  ctx.lineWidth = canvas.width * (activeID != 0 ? 0.004 : 0.03);
+  if ( ! lastPositions[activeID].x ) lastPositions[activeID] = position;
   ctx.beginPath();
-  ctx.moveTo(lastPositions[personalID].x * canvas.width,lastPositions[personalID].y * canvas.width);
+  ctx.moveTo(lastPositions[activeID].x * canvas.width,lastPositions[activeID].y * canvas.width);
   ctx.lineTo(position.x * canvas.width,position.y * canvas.width);
   ctx.stroke();
-  lastPositions[personalID] = position;
+  lastPositions[activeID] = position;
   saveData.push(position);
 }
 
 function produceDrawing(codemap) {
   codemap = JSON.parse(codemap);
   codemap = codemap.map(item => item && item[0] ? {x: item[0],y: item[1]} : item);
-  ctx.lineWidth = 2.5;
   var id = 0;
-  console.log(codemap);
   for ( var i = 0; i < codemap.length; i++ ) {
-    if ( ! codemap[i] ) {
+    if ( codemap[i] === null ) {
       lastPositions[id] = {x: null,y: null}
       continue;
     }
@@ -43,6 +41,7 @@ function produceDrawing(codemap) {
       continue;
     }
     ctx.strokeStyle = colors[id];
+    ctx.lineWidth = canvas.width * (id != 0 ? 0.004 : 0.03);
     if ( ! lastPositions[id].x ) lastPositions[id] = codemap[i];
     ctx.beginPath();
     ctx.moveTo(lastPositions[id].x * canvas.width,lastPositions[id].y * canvas.width);
@@ -59,21 +58,11 @@ function sendData() {
       lastSendTime++;
       if ( lastSendTime < TIME_BEFORE_SEND || saveData.length <= 0 ) return;
     }
-    var translation = JSON.stringify([personalID].concat(saveData).map(item => item && item.x ? [item.x,item.y] : item));
+    var translation = JSON.stringify([activeID].concat(saveData).map(item => item && item.x ? [item.x,item.y] : item));
     socket.emit("codemap",translation);
     saveData = [];
     lastSendTime = 0;
   },1);
-}
-
-window.onmousemove = drawAtMouse;
-window.onmousedown = function() {
-  drawing = true;
-}
-window.onmouseup = function() {
-  drawing = false;
-  lastPositions[personalID] = {x: null,y: null}
-  saveData.push(null);
 }
 
 socket.on("codemap",function(codemap) {
@@ -81,6 +70,7 @@ socket.on("codemap",function(codemap) {
 });
 socket.on("confirm",function(response) {
   response = JSON.parse(response);
+  activeID = response.id;
   personalID = response.id;
   colors = response.colors;
   lastPositions = response.colors.map(item => {return {x: null,y: null}});
@@ -92,6 +82,15 @@ socket.on("connection",function(data) {
   colors[data.id] = data.color;
 });
 
+window.onmousemove = drawAtMouse;
+window.onmousedown = function() {
+  drawing = true;
+}
+window.onmouseup = function() {
+  drawing = false;
+  lastPositions[activeID] = {x: null,y: null}
+  saveData.push(null);
+}
 window.onload = function() {
   canvas = document.getElementById("canvas");
   canvas.width = Math.min(window.innerWidth,window.innerHeight);
