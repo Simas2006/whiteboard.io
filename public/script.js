@@ -75,10 +75,21 @@ function renderUsers() {
     div.removeChild(div.firstChild);
   }
   for ( var i = 1; i < names.length; i++ ) {
+    if ( ! names[i] ) continue;
     var span = document.createElement("span");
-    span.innerText = names[i];
+    span.innerText = names[i] + " ";
     span.style.color = colors[i];
     div.appendChild(span);
+    if ( personalID == 1 ) {
+      var button = document.createElement("button");
+      button.className = "inline";
+      button.innerText = "Kick";
+      button["data-uid"] = i;
+      button.onclick = function() {
+        socket.emit("special","KICK " + this["data-uid"]);
+      }
+      div.appendChild(button);
+    }
     div.appendChild(document.createElement("br"));
   }
 }
@@ -124,6 +135,11 @@ socket.on("connection",function(data) {
   names[data.id] = decodeURIComponent(data.name);
   renderUsers();
 });
+socket.on("disconnection",function(uid) {
+  names[uid] = null;
+  renderUsers();
+});
+
 socket.on("clear",function() {
   ctx.fillStyle = "white";
   ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -133,6 +149,10 @@ socket.on("allow",function(value) {
 });
 socket.on("connectionsLocked",function() {
   alert("This whiteboard has been locked by its admin.");
+  location.href = "index.html";
+});
+socket.on("kick",function() {
+  alert("You have been kicked from this whiteboard by its admin.");
   location.href = "index.html";
 });
 

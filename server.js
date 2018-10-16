@@ -10,6 +10,7 @@ var colors = ["#ffffff"];
 var permanentCodemap = [];
 var allowDrawing = true;
 var connectionsLocked = false;
+var uidsToKick = [];
 
 var padHex = n => "0".repeat(6 - n.length) + n;
 
@@ -60,8 +61,21 @@ io.on("connection",function(socket) {
       socket.broadcast.emit("allow",allowDrawing ? "true" : "false");
     } else if ( command[0] == "LOCK" ) {
       connectionsLocked = command[1] == "true";
+    } else if ( command[0] == "KICK" ) {
+      if ( isNaN(parseInt(command[1])) ) return;
+      uidsToKick.push(parseInt(command[1]));
     }
   });
+  setInterval(function() {
+    if ( uidsToKick.indexOf(uid) > -1 ) {
+      uidsToKick.splice(uidsToKick.indexOf(uid),1);
+      socket.emit("kick");
+      socket.broadcast.emit("disconnection",uid);
+      socket.disconnect();
+      names[uid] = null;
+      colors[uid] = null;
+    }
+  },500);
 });
 
 http.listen(PORT,function() {
