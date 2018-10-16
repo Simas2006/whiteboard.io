@@ -51,6 +51,11 @@ io.on("connection",function(socket) {
     permanentCodemap = permanentCodemap.concat(JSON.parse(codemap));
     socket.broadcast.emit("codemap",codemap);
   });
+  socket.on("disconnect",function() {
+    socket.broadcast.emit("disconnection",uid);
+    socket.broadcast.emit("log",`[Server] ${names[uid]} disconnected`);
+    names[uid] = null;
+  });
   socket.on("special",function(command) {
     if ( uid != 1 ) return;
     command = command.split(" ");
@@ -81,7 +86,6 @@ io.on("connection",function(socket) {
       socket.broadcast.emit("disconnection",uid);
       socket.disconnect();
       names[uid] = null;
-      colors[uid] = null;
     }
   },500);
 });
