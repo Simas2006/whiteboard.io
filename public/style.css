@@ -1,4 +1,5 @@
 body {
+  font-family: "Verdana";
   text-align: center;
 }
 canvas {
@@ -8,8 +9,12 @@ button {
   min-width: 8vh;
   height: 8vh;
   text-align: center;
-  font-family: "Verdana";
   font-size: 200%;
+}
+input {
+  min-width: 15vw;
+  height: 6vh;
+  font-size: 150%;
 }
 #splitter {
   display: inline-block;

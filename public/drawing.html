@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>whiteboard.io</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <button onclick="activeID = personalID">&#x270f;</button>
+  <button onclick="activeID = 0">&#x232b;</button>
+  <div id="specialControls">
+    <span id="splitter">|</span>
+    <button onclick="socket.emit('special','CLEAR')">Clear</button>
+    <button id="allowButton" onclick="toggleAllow()"></button>
+  </div>
+  <br />
+  <canvas id="canvas" />
+</body>
+</html>

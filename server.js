@@ -4,6 +4,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var PORT = process.argv[2] || 8000;
+var names = ["eraser"];
 var colors = ["#ffffff"];
 var permanentCodemap = [];
 var allowDrawing = true;
@@ -12,18 +13,26 @@ var padHex = n => "0".repeat(6 - n.length) + n;
 
 app.use("/public",express.static(__dirname + "/public"));
 
+app.get("/",function(request,response) {
+  response.redirect("/public/index.html");
+})
+
 io.on("connection",function(socket) {
+  names.push(null);
   var uid = colors.push("#" + padHex(Math.floor(Math.random() * 0x1000000).toString(16))) - 1;
-  socket.broadcast.emit("connection",JSON.stringify({
-    id: uid,
-    color: colors[uid]
-  }));
   socket.emit("confirm",JSON.stringify({
     id: uid,
     colors: colors,
     allowDrawing: allowDrawing
   }));
-  socket.on("ready",function() {
+  socket.on("ready",function(name) {
+    if ( ! name ) return;
+    names[uid] = name;
+    socket.broadcast.emit("connection",JSON.stringify({
+      id: uid,
+      color: colors[uid],
+      name: name
+    }));
     socket.emit("codemap",JSON.stringify(permanentCodemap));
   });
   socket.on("codemap",function(codemap) {

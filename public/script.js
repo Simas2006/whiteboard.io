@@ -84,7 +84,7 @@ socket.on("confirm",function(response) {
   allowDrawing = response.allowDrawing;
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
   if ( personalID == 1 ) document.getElementById("specialControls").style.display = "inline-block";
-  socket.emit("ready");
+  socket.emit("ready",location.search.slice(1));
 });
 socket.on("connection",function(data) {
   data = JSON.parse(data);
