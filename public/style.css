@@ -6,15 +6,21 @@ canvas {
   border: 1px solid black;
 }
 button:not(.inline) {
-  min-width: 8vh;
-  height: 8vh;
+  display: inline;
+  height: 6vh;
   text-align: center;
   font-size: 200%;
 }
+button.padded {
+  width: 8vh;
+}
 input {
   min-width: 15vw;
-  height: 6vh;
-  font-size: 150%;
+  height: 5vh;
+  font-size: 200%;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
 }
 table,td {
   border: 1px solid black;

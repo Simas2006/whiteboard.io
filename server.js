@@ -43,6 +43,8 @@ io.on("connection",function(socket) {
       name: name
     }));
     socket.emit("codemap",JSON.stringify(permanentCodemap));
+    socket.emit("log",`[Server] ${name} connected`);
+    socket.broadcast.emit("log",`[Server] ${name} connected`);
   });
   socket.on("codemap",function(codemap) {
     if ( ! allowDrawing && uid != 1 ) return;
@@ -55,12 +57,18 @@ io.on("connection",function(socket) {
     if ( command[0] == "CLEAR" ) {
       socket.emit("clear");
       socket.broadcast.emit("clear");
+      socket.emit("log",`[Server] ${names[1]} cleared the board`);
+      socket.broadcast.emit("log",`[Server] ${names[1]} cleared the board`);
       permanentCodemap = [];
     } else if ( command[0] == "ALLOW" ) {
       allowDrawing = command[1] == "true";
       socket.broadcast.emit("allow",allowDrawing ? "true" : "false");
+      socket.emit("log",`[Server] ${names[1]} ${allowDrawing ? "en" : "dis"}abled drawing`);
+      socket.broadcast.emit("log",`[Server] ${names[1]} ${allowDrawing ? "en" : "dis"}abled drawing`);
     } else if ( command[0] == "LOCK" ) {
       connectionsLocked = command[1] == "true";
+      socket.emit("log",`[Server] ${names[1]} ${connectionsLocked ? "" : "un"}locked the board to new users`);
+      socket.broadcast.emit("log",`[Server] ${names[1]} ${connectionsLocked ? "" : "un"}locked the board to new users`);
     } else if ( command[0] == "KICK" ) {
       if ( isNaN(parseInt(command[1])) ) return;
       uidsToKick.push(parseInt(command[1]));

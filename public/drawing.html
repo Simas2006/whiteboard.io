@@ -8,8 +8,8 @@
   <script src="script.js"></script>
 </head>
 <body>
-  <button onclick="activeID = personalID">&#x270f;</button>
-  <button onclick="activeID = 0">&#x232b;</button>
+  <button class="padded" onclick="activeID = personalID">&#x270f;</button>
+  <button class="padded" onclick="activeID = 0">&#x232b;</button>
   <div id="specialControls">
     <span id="splitter">|</span>
     <button onclick="socket.emit('special','CLEAR')">Clear</button>

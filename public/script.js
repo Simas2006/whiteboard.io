@@ -7,6 +7,7 @@ var drawing = false;
 var allowDrawing = true;
 var connectionsLocked = false;
 var panelOpen = false;
+var logMessages = " ".repeat(10).split("");
 var saveData = [];
 var lastSendTime = 0;
 var socket = io();
@@ -94,6 +95,10 @@ function renderUsers() {
   }
 }
 
+function renderLog() {
+  document.getElementById("log").innerText = logMessages.join("\n");
+}
+
 function toggleAllow() {
   allowDrawing = ! allowDrawing;
   socket.emit("special","ALLOW " + (allowDrawing ? "true" : "false"));
@@ -154,6 +159,11 @@ socket.on("connectionsLocked",function() {
 socket.on("kick",function() {
   alert("You have been kicked from this whiteboard by its admin.");
   location.href = "index.html";
+});
+socket.on("log",function(message) {
+  logMessages.unshift(message);
+  logMessages.pop();
+  renderLog();
 });
 
 window.onmousemove = drawAtMouse;
