@@ -30,6 +30,7 @@ io.on("connection",function(socket) {
   socket.emit("confirm",JSON.stringify({
     id: uid,
     colors: colors,
+    names: names,
     allowDrawing: allowDrawing
   }));
   socket.on("ready",function(name) {

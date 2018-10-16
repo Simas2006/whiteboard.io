@@ -16,6 +16,19 @@ input {
   height: 6vh;
   font-size: 150%;
 }
+table,td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  vertical-align: top;
+}
+td {
+  width: 49vw;
+  text-align: left;
+  height: 70vh;
+}
+#log {
+  font-family: "Courier";
+}
 #splitter {
   display: inline-block;
   font-size: 225%;
@@ -23,4 +36,11 @@ input {
 }
 #specialControls {
   display: none;
+}
+#panelLink {
+  display: block;
+  color: black;
+  text-align: left;
+  text-decoration: none;
+  font-size: 125%;
 }

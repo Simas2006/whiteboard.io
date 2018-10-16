@@ -17,6 +17,22 @@
     <button id="lockButton" onclick="toggleLock()">Lock</button>
   </div>
   <br />
-  <canvas id="canvas" />
+  <canvas id="canvas"></canvas>
+  <hr />
+  <a id="panelLink" href="javascript: togglePanel()">Open Panel</a>
+  <table id="panel">
+    <tr>
+      <td>
+        Connected Users
+        <hr />
+        <div id="users"></div>
+      </td>
+      <td>
+        Log
+        <hr />
+        <p id="log"></p>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

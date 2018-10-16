@@ -1,5 +1,6 @@
 var canvas,ctx;
 var lastPositions = [];
+var names = [];
 var colors = [];
 var activeID,personalID;
 var drawing = false;
@@ -67,12 +68,25 @@ function sendData() {
   },1);
 }
 
+function renderUsers() {
+  var div = document.getElementById("users");
+  while ( div.firstChild ) {
+    div.removeChild(div.firstChild);
+  }
+  for ( var i = 1; i < names.length; i++ ) {
+    var span = document.createElement("span");
+    span.innerText = names[i];
+    span.style.color = colors[i];
+    div.appendChild(span);
+    div.appendChild(document.createElement("br"));
+  }
+}
+
 function toggleAllow() {
   allowDrawing = ! allowDrawing;
   socket.emit("special","ALLOW " + (allowDrawing ? "true" : "false"));
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
 }
-
 function toggleLock() {
   connectionsLocked = ! connectionsLocked;
   socket.emit("special","LOCK " + (connectionsLocked ? "true" : "false"));
@@ -87,16 +101,21 @@ socket.on("confirm",function(response) {
   activeID = response.id;
   personalID = response.id;
   colors = response.colors;
+  names = response.names;
+  names[personalID] = decodeURIComponent(location.search.slice(1));
   lastPositions = response.colors.map(item => {return {x: null,y: null}});
   allowDrawing = response.allowDrawing;
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
   if ( personalID == 1 ) document.getElementById("specialControls").style.display = "inline-block";
+  renderUsers();
   socket.emit("ready",location.search.slice(1));
 });
 socket.on("connection",function(data) {
   data = JSON.parse(data);
   lastPositions[data.id] = {x: null,y: null}
   colors[data.id] = data.color;
+  names[data.id] = decodeURIComponent(data.name);
+  renderUsers();
 });
 socket.on("clear",function() {
   ctx.fillStyle = "white";
