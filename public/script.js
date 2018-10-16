@@ -4,6 +4,7 @@ var colors = [];
 var activeID,personalID;
 var drawing = false;
 var allowDrawing = true;
+var connectionsLocked = false;
 var saveData = [];
 var lastSendTime = 0;
 var socket = io();
@@ -72,6 +73,12 @@ function toggleAllow() {
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
 }
 
+function toggleLock() {
+  connectionsLocked = ! connectionsLocked;
+  socket.emit("special","LOCK " + (connectionsLocked ? "true" : "false"));
+  document.getElementById("lockButton").innerText = connectionsLocked ? "Unlock" : "Lock";
+}
+
 socket.on("codemap",function(codemap) {
   produceDrawing(codemap);
 });
@@ -97,6 +104,10 @@ socket.on("clear",function() {
 });
 socket.on("allow",function(value) {
   allowDrawing = value == "true";
+});
+socket.on("connectionsLocked",function() {
+  alert("This whiteboard has been locked by its admin.");
+  location.href = "index.html";
 });
 
 window.onmousemove = drawAtMouse;

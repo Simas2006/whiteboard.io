@@ -4,10 +4,12 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var PORT = process.argv[2] || 8000;
+
 var names = ["eraser"];
 var colors = ["#ffffff"];
 var permanentCodemap = [];
 var allowDrawing = true;
+var connectionsLocked = false;
 
 var padHex = n => "0".repeat(6 - n.length) + n;
 
@@ -18,6 +20,11 @@ app.get("/",function(request,response) {
 })
 
 io.on("connection",function(socket) {
+  if ( connectionsLocked ) {
+    socket.emit("connectionsLocked");
+    socket.disconnect();
+    return;
+  }
   names.push(null);
   var uid = colors.push("#" + padHex(Math.floor(Math.random() * 0x1000000).toString(16))) - 1;
   socket.emit("confirm",JSON.stringify({
@@ -50,6 +57,8 @@ io.on("connection",function(socket) {
     } else if ( command[0] == "ALLOW" ) {
       allowDrawing = command[1] == "true";
       socket.broadcast.emit("allow",allowDrawing ? "true" : "false");
+    } else if ( command[0] == "LOCK" ) {
+      connectionsLocked = command[1] == "true";
     }
   });
 });
