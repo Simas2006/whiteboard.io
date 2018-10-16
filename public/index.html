@@ -10,8 +10,11 @@
 <body>
   <button onclick="activeID = personalID">&#x270f;</button>
   <button onclick="activeID = 0">&#x232b;</button>
-  <span id="splitter">|</span>
-  <button onclick="socket.emit('special','CLEAR')">Clear</button>
+  <div id="specialControls">
+    <span id="splitter">|</span>
+    <button onclick="socket.emit('special','CLEAR')">Clear</button>
+    <button id="allowButton" onclick="toggleAllow()"></button>
+  </div>
   <br />
   <canvas id="canvas" />
 </body>

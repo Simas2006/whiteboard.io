@@ -16,3 +16,6 @@ button {
   font-size: 225%;
   width: 10px;
 }
+#specialControls {
+  display: none;
+}

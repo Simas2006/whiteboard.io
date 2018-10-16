@@ -3,6 +3,7 @@ var lastPositions = [];
 var colors = [];
 var activeID,personalID;
 var drawing = false;
+var allowDrawing = true;
 var saveData = [];
 var lastSendTime = 0;
 var socket = io();
@@ -10,7 +11,7 @@ var POINTS_BEFORE_SEND = 5;
 var TIME_BEFORE_SEND = 12.5 * POINTS_BEFORE_SEND;
 
 function drawAtMouse(event) {
-  if ( ! drawing ) return;
+  if ( ! drawing || (! allowDrawing && personalID != 1) ) return;
   var rect = canvas.getBoundingClientRect();
   var position = {
     x: (event.clientX - rect.left) / canvas.width,
@@ -65,6 +66,12 @@ function sendData() {
   },1);
 }
 
+function toggleAllow() {
+  allowDrawing = ! allowDrawing;
+  socket.emit("special","ALLOW " + (allowDrawing ? "true" : "false"));
+  document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
+}
+
 socket.on("codemap",function(codemap) {
   produceDrawing(codemap);
 });
@@ -74,6 +81,9 @@ socket.on("confirm",function(response) {
   personalID = response.id;
   colors = response.colors;
   lastPositions = response.colors.map(item => {return {x: null,y: null}});
+  allowDrawing = response.allowDrawing;
+  document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
+  if ( personalID == 1 ) document.getElementById("specialControls").style.display = "inline-block";
   socket.emit("ready");
 });
 socket.on("connection",function(data) {
@@ -84,6 +94,9 @@ socket.on("connection",function(data) {
 socket.on("clear",function() {
   ctx.fillStyle = "white";
   ctx.fillRect(0,0,canvas.width,canvas.height);
+});
+socket.on("allow",function(value) {
+  allowDrawing = value == "true";
 });
 
 window.onmousemove = drawAtMouse;
