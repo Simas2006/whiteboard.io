@@ -1,11 +1,12 @@
 var canvas,ctx;
-var lastPositions = [];
 var names = [];
 var colors = [];
+var lastPositions = [];
 var activeID,personalID;
 var drawing = false;
 var allowDrawing = true;
 var connectionsLocked = false;
+var panelOpen = false;
 var saveData = [];
 var lastSendTime = 0;
 var socket = io();
@@ -87,10 +88,16 @@ function toggleAllow() {
   socket.emit("special","ALLOW " + (allowDrawing ? "true" : "false"));
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
 }
+
 function toggleLock() {
   connectionsLocked = ! connectionsLocked;
   socket.emit("special","LOCK " + (connectionsLocked ? "true" : "false"));
   document.getElementById("lockButton").innerText = connectionsLocked ? "Unlock" : "Lock";
+}
+
+function togglePanel() {
+  panelOpen = ! panelOpen;
+  document.getElementById("panel").style.display = panelOpen ? "block" : "none";
 }
 
 socket.on("codemap",function(codemap) {

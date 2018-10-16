@@ -44,3 +44,6 @@ td {
   text-decoration: none;
   font-size: 125%;
 }
+#panel {
+  display: none;
+}
