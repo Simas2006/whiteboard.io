@@ -81,6 +81,10 @@ socket.on("connection",function(data) {
   lastPositions[data.id] = {x: null,y: null}
   colors[data.id] = data.color;
 });
+socket.on("clear",function() {
+  ctx.fillStyle = "white";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+});
 
 window.onmousemove = drawAtMouse;
 window.onmousedown = function() {

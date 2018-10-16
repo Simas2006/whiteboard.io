@@ -10,6 +10,8 @@
 <body>
   <button onclick="activeID = personalID">&#x270f;</button>
   <button onclick="activeID = 0">&#x232b;</button>
+  <span id="splitter">|</span>
+  <button onclick="socket.emit('special','CLEAR')">Clear</button>
   <br />
   <canvas id="canvas" />
 </body>

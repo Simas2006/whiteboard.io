@@ -1,13 +1,18 @@
 body {
   text-align: center;
 }
+canvas {
+  border: 1px solid black;
+}
 button {
-  width: 8vh;
+  min-width: 8vh;
   height: 8vh;
   text-align: center;
   font-family: "Verdana";
   font-size: 200%;
 }
-canvas {
-  border: 1px solid black;
+#splitter {
+  display: inline-block;
+  font-size: 225%;
+  width: 10px;
 }

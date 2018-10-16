@@ -28,6 +28,14 @@ io.on("connection",function(socket) {
     permanentCodemap = permanentCodemap.concat(JSON.parse(codemap));
     socket.broadcast.emit("codemap",codemap);
   });
+  socket.on("special",function(command) {
+    if ( uid != 1 ) return;
+    if ( command == "CLEAR" ) {
+      socket.emit("clear");
+      socket.broadcast.emit("clear");
+      permanentCodemap = [];
+    }
+  });
 });
 
 http.listen(PORT,function() {
