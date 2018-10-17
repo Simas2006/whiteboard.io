@@ -4,13 +4,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var PORT = process.argv[2] || 8000;
-
-var names = ["eraser"];
-var colors = ["#ffffff"];
-var permanentCodemap = [];
-var allowDrawing = true;
-var connectionsLocked = false;
-var uidsToKick = [];
+var servers = {};
 
 var padHex = n => "0".repeat(6 - n.length) + n;
 
@@ -29,82 +23,89 @@ class Server {
     this.connectionsLocked = false;
     this.uidsToKick = [];
   }
-}
-
-io.on("connection",function(socket) {
-  socket.emit("sendServer");
-  socket.on("setServer",function(id) {
-    console.log(id);
-    if ( connectionsLocked ) {
+  setupQueries(socket) {
+    if ( this.connectionsLocked ) {
       socket.emit("connectionsLocked");
       socket.disconnect();
       return;
     }
-    names.push(null);
-    var uid = colors.push("#" + padHex(Math.floor(Math.random() * 0x1000000).toString(16))) - 1;
+    this.names.push(null);
+    var uid = this.colors.push("#" + padHex(Math.floor(Math.random() * 0x1000000).toString(16))) - 1;
     socket.emit("metadata",JSON.stringify({
       id: uid,
-      colors: colors,
-      names: names,
-      allowDrawing: allowDrawing
+      colors: this.colors,
+      names: this.names,
+      allowDrawing: this.allowDrawing
     }));
-    socket.on("sendCodemap",function(name) {
+    socket.on("sendCodemap",(name) => {
       if ( ! name ) return;
-      names[uid] = name;
+      this.names[uid] = name;
       socket.broadcast.emit("connection",JSON.stringify({
         id: uid,
-        color: colors[uid],
+        color: this.colors[uid],
         name: name
       }));
-      socket.emit("codemap",JSON.stringify(permanentCodemap));
+      socket.emit("codemap",JSON.stringify(this.permanentCodemap));
       socket.emit("log",`[Server] ${name} connected`);
       socket.broadcast.emit("log",`[Server] ${name} connected`);
     });
-    socket.on("codemap",function(codemap) {
-      if ( ! allowDrawing && uid != 1 ) return;
-      permanentCodemap = permanentCodemap.concat(JSON.parse(codemap));
+    socket.on("codemap",(codemap) => {
+      if ( ! this.allowDrawing && uid != 1 ) return;
+      this.permanentCodemap = this.permanentCodemap.concat(JSON.parse(codemap));
       socket.broadcast.emit("codemap",codemap);
     });
-    socket.on("disconnect",function() {
+    socket.on("disconnect",() => {
       socket.broadcast.emit("disconnection",uid);
-      socket.broadcast.emit("log",`[Server] ${names[uid]} disconnected`);
-      names[uid] = null;
+      socket.broadcast.emit("log",`[Server] ${this.names[uid]} disconnected`);
+      this.names[uid] = null;
     });
-    socket.on("special",function(command) {
+    socket.on("special",(command) => {
       if ( uid != 1 ) return;
       command = command.split(" ");
       if ( command[0] == "CLEAR" ) {
         socket.emit("clear");
         socket.broadcast.emit("clear");
-        socket.emit("log",`[Server] ${names[1]} cleared the board`);
-        socket.broadcast.emit("log",`[Server] ${names[1]} cleared the board`);
-        permanentCodemap = [];
+        socket.emit("log",`[Server] ${this.names[1]} cleared the board`);
+        socket.broadcast.emit("log",`[Server] ${this.names[1]} cleared the board`);
+        this.permanentCodemap = [];
       } else if ( command[0] == "ALLOW" ) {
-        allowDrawing = command[1] == "true";
-        socket.broadcast.emit("allow",allowDrawing ? "true" : "false");
-        socket.emit("log",`[Server] ${names[1]} ${allowDrawing ? "en" : "dis"}abled drawing`);
-        socket.broadcast.emit("log",`[Server] ${names[1]} ${allowDrawing ? "en" : "dis"}abled drawing`);
+        this.allowDrawing = command[1] == "true";
+        socket.broadcast.emit("allow",this.allowDrawing ? "true" : "false");
+        socket.emit("log",`[Server] ${this.names[1]} ${this.allowDrawing ? "en" : "dis"}abled drawing`);
+        socket.broadcast.emit("log",`[Server] ${this.names[1]} ${this.allowDrawing ? "en" : "dis"}abled drawing`);
       } else if ( command[0] == "LOCK" ) {
-        connectionsLocked = command[1] == "true";
-        socket.emit("log",`[Server] ${names[1]} ${connectionsLocked ? "" : "un"}locked the board to new users`);
-        socket.broadcast.emit("log",`[Server] ${names[1]} ${connectionsLocked ? "" : "un"}locked the board to new users`);
+        this.connectionsLocked = command[1] == "true";
+        socket.emit("log",`[Server] ${this.names[1]} ${this.connectionsLocked ? "" : "un"}locked the board to new users`);
+        socket.broadcast.emit("log",`[Server] ${this.names[1]} ${this.connectionsLocked ? "" : "un"}locked the board to new users`);
       } else if ( command[0] == "KICK" ) {
         if ( isNaN(parseInt(command[1])) ) return;
-        uidsToKick.push(parseInt(command[1]));
+        this.uidsToKick.push(parseInt(command[1]));
       }
     });
-    setInterval(function() {
-      if ( uidsToKick.indexOf(uid) > -1 ) {
-        uidsToKick.splice(uidsToKick.indexOf(uid),1);
+    setInterval(() => {
+      if ( this.uidsToKick.indexOf(uid) > -1 ) {
+        this.uidsToKick.splice(this.uidsToKick.indexOf(uid),1);
         socket.emit("kick");
         socket.broadcast.emit("disconnection",uid);
         socket.disconnect();
-        names[uid] = null;
+        this.names[uid] = null;
       }
     },500);
+  }
+}
+
+io.on("connection",function(socket) {
+  socket.on("setServer",function(id) {
+    if ( ! servers[id] ) {
+      socket.emit("invalidServer");
+      socket.disconnect();
+    }
+    servers[id].setupQueries(socket);
   });
+  socket.emit("sendServer");
 });
 
 http.listen(PORT,function() {
+  servers["ABCDEF"] = new Server();
   console.log("Listening on port " + PORT);
 });
