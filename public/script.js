@@ -116,10 +116,10 @@ function togglePanel() {
   document.getElementById("panel").style.display = panelOpen ? "block" : "none";
 }
 
-socket.on("codemap",function(codemap) {
-  produceDrawing(codemap);
+socket.on("sendServer",function() {
+  socket.emit("setServer","ABCDEF");
 });
-socket.on("confirm",function(response) {
+socket.on("metadata",function(response) {
   response = JSON.parse(response);
   activeID = response.id;
   personalID = response.id;
@@ -131,7 +131,10 @@ socket.on("confirm",function(response) {
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
   if ( personalID == 1 ) document.getElementById("specialControls").style.display = "inline-block";
   renderUsers();
-  socket.emit("ready",location.search.slice(1));
+  socket.emit("sendCodemap",location.search.slice(1));
+});
+socket.on("codemap",function(codemap) {
+  produceDrawing(codemap);
 });
 socket.on("connection",function(data) {
   data = JSON.parse(data);
