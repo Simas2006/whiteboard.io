@@ -117,7 +117,7 @@ function togglePanel() {
 }
 
 socket.on("sendServer",function() {
-  socket.emit("setServer","ABCDEF");
+  socket.emit("setServer",decodeURIComponent(location.search).slice(1).split(",")[0]);
 });
 socket.on("metadata",function(response) {
   response = JSON.parse(response);
@@ -125,13 +125,14 @@ socket.on("metadata",function(response) {
   personalID = response.id;
   colors = response.colors;
   names = response.names;
-  names[personalID] = decodeURIComponent(location.search.slice(1));
+  var name = decodeURIComponent(location.search).slice(1).split(",").slice(1).join(",");
+  names[personalID] = name;
   lastPositions = response.colors.map(item => {return {x: null,y: null}});
   allowDrawing = response.allowDrawing;
   document.getElementById("allowButton").innerText = allowDrawing ? "Disallow" : "Allow";
   if ( personalID == 1 ) document.getElementById("specialControls").style.display = "inline-block";
   renderUsers();
-  socket.emit("sendCodemap",location.search.slice(1));
+  socket.emit("sendCodemap",name);
 });
 socket.on("codemap",function(codemap) {
   produceDrawing(codemap);
@@ -161,6 +162,10 @@ socket.on("connectionsLocked",function() {
 });
 socket.on("kick",function() {
   alert("You have been kicked from this whiteboard by its admin.");
+  location.href = "index.html";
+});
+socket.on("invalidServer",function() {
+  alert("The whiteboard code you entered does not exist.");
   location.href = "index.html";
 });
 socket.on("log",function(message) {

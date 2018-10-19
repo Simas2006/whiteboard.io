@@ -5,15 +5,26 @@
   <title>whiteboard.io</title>
   <link rel="stylesheet" type="text/css" href="style.css" />
   <script>
+    var nick,code;
     function connect() {
-      if ( ! document.getElementById("name").value ) return;
-      location.href = "drawing.html?" + encodeURIComponent(document.getElementById("name").value);
+      if ( ! nick.value ) return;
+      location.href = `drawing.html?${encodeURIComponent(code.value)},${encodeURIComponent(nick.value)}`;
+    }
+    window.onload = function() {
+      nick = document.getElementById("name");
+      code = document.getElementById("code");
+      code.onkeydown = code.onchange = function() {
+        this.value = this.value.split("").filter(item => "1234567890".indexOf(item) > -1).join("");
+      }
     }
   </script>
 </head>
 <body>
   <h1>whiteboard.io</h1>
   <input type="text" id="name" placeholder="Name" />
+  <br />
+  <br />
+  <input type="text" id="code" placeholder="Code" />
   <br />
   <br />
   <button onclick="connect()">Connect</button>

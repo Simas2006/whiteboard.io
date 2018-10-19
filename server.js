@@ -99,6 +99,7 @@ io.on("connection",function(socket) {
     if ( ! servers[id] ) {
       socket.emit("invalidServer");
       socket.disconnect();
+      return;
     }
     servers[id].setupQueries(socket);
   });
@@ -106,6 +107,6 @@ io.on("connection",function(socket) {
 });
 
 http.listen(PORT,function() {
-  servers["ABCDEF"] = new Server();
+  servers["123456"] = new Server();
   console.log("Listening on port " + PORT);
 });
